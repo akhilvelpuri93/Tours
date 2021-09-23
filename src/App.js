@@ -1,25 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react'
+import Loading from './Loading'
+import Tours from './Tours'
+const url = 'https://mocki.io/v1/fc8b5c09-93e1-4ce4-bc8d-29c773f32b30'
 
 function App() {
+  const [loading, setLoading] = useState(true)
+  const [tours, setTours] = useState([])
+
+  const removeTour = (id) => {
+    const newTours = tours.filter((tour) => tour.id !== id)
+    setTours(newTours)
+  }
+
+  const fetchTours = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(url)
+      const tours = await response.json()
+      setLoading(false)
+      setTours(tours)
+    } catch (error) {
+      setLoading(false)
+      console.log(error)
+    }
+  }
+  useEffect(() => {
+    fetchTours()
+  }, [])
+  if (loading) {
+    return (
+      <main>
+        <Loading />
+      </main>
+    )
+  }
+  if (tours.length === 0) {
+    return (
+      <main>
+        <div className='title'>
+          <h2>no tours left</h2>
+          <button className='btn' onClick={() => fetchTours()}>
+            refresh
+          </button>
+        </div>
+      </main>
+    )
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <main>
+      <Tours tours={tours} removeTour={removeTour} />
+    </main>
+  )
 }
 
-export default App;
+export default App
